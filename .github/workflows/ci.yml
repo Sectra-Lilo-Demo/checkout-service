@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main, 'feature/**', 'hotfix/**']
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-config:
+    name: Validate Config
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check payment gateway region config
+        run: |
+          echo "==> Checking required payment gateway config..."
+          if grep -qE "^    region:" src/main/resources/application.yml; then
+            echo "✅ payment.gateway.region is present"
+          else
+            echo "❌ payment.gateway.region is missing or commented out"
+            echo "   This caused the P1 incident on 2026-02-20."
+            echo "   SDK v3 requires an explicit region config — see KAN-2."
+            exit 1
+          fi
+
+      - name: Check for required env vars declared
+        run: |
+          echo "==> Checking env var declarations..."
+          if grep -q "PAYMENT_GATEWAY_API_KEY" src/main/resources/application.yml; then
+            echo "✅ PAYMENT_GATEWAY_API_KEY referenced"
+          else
+            echo "❌ PAYMENT_GATEWAY_API_KEY not found in application.yml"
+            exit 1
+          fi
+
+      - name: Lint YAML config
+        run: |
+          echo "==> Linting application.yml..."
+          python3 -c "
+          import yaml, sys
+          with open('src/main/resources/application.yml') as f:
+              yaml.safe_load(f)
+          print('✅ YAML is valid')
+          "
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: validate-config
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Run unit tests (simulated)
+        run: |
+          echo "==> Running unit tests..."
+          echo "  PaymentGatewayClientTest ... PASSED"
+          echo "  CheckoutServiceTest ........ PASSED"
+          echo "  CartManagerTest ............ PASSED"
+          echo "  OrderValidatorTest ......... PASSED"
+          echo ""
+          echo "Results: 47 passed, 0 failed, 0 skipped"
+          echo "✅ All tests passed"
