@@ -10,7 +10,7 @@ payment:
     api-key: ${PAYMENT_GATEWAY_API_KEY}
     timeout-ms: 5000
     sdk-version: v3
-    # region: us-east-1  <-- removed during SDK v3 refactor; v3 client handles routing internally (WRONG — still required)
+    region: us-east-1
 
 checkout:
   cart-ttl-minutes: 30
