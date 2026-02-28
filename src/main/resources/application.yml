@@ -9,8 +9,8 @@ payment:
   gateway:
     api-key: ${PAYMENT_GATEWAY_API_KEY}
     timeout-ms: 5000
+    sdk-version: v3
     region: us-east-1
-    sdk-version: v2
 
 checkout:
   cart-ttl-minutes: 30
@@ -19,3 +19,7 @@ checkout:
 logging:
   level:
     com.sectra.checkout: INFO
+
+# CI trigger: 2026-02-20T23:19:27Z
+
+# CI trigger 2: 2026-02-20T23:19:55Z
